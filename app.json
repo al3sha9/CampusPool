@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "CampusPool",
+    "slug": "campuspool",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "campuspool",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "pk.campuspool.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/brand-mark.png",
+        "backgroundColor": "#f7f7f7"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "pk.campuspool.app",
+      "blockedPermissions": [
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "resizeMode": "contain",
+          "backgroundColor": "#f7f7f7",
+          "image": "./assets/images/brand-mark.png",
+          "imageWidth": 200,
+          "dark": {
+            "image": "./assets/images/brand-mark.png",
+            "backgroundColor": "#f7f7f7"
+          }
+        }
+      ],
+      "expo-status-bar",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow CampusPool to scan passenger pickup QR codes.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ],
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow CampusPool to show your position on the map while you use the app.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
