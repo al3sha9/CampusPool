@@ -82,6 +82,12 @@ async function prepare() {
       "utf8"
     )
   );
+  await db.exec(
+    readFileSync(
+      new URL("../supabase/migrations/20261010123000_ride_history.sql", import.meta.url),
+      "utf8"
+    )
+  );
   for (let i = 0; i < ids.length; i++)
     await db.query("insert into auth.users values($1,now(),$2::jsonb)", [
       ids[i],
@@ -428,5 +434,27 @@ test("ride chat restricts membership, deduplicates retries, limits spam and clos
   await assert.rejects(db.exec("select * from campuspool_private.messages"), /permission denied/);
   await db.exec("reset role; set role anon");
   await assert.rejects(db.query("select public.campuspool_chat($1)", [g.id]), /permission denied/);
+  await db.exec("reset role");
+});
+
+test("ride history survives dismissal, returns exact shares and only the callers rides", async () => {
+  const history = async (actor) => {
+    await db.query("select set_config('request.jwt.claim.sub',$1,false)", [actor]);
+    return (await db.query("select public.campuspool_history() result")).rows[0].result;
+  };
+  const a = await history(ids[0]);
+  const completed = a.find((ride) => ride.status === "completed" && ride.total === 901);
+  assert(completed);
+  assert.equal(completed.share, 451);
+  const b = await history(ids[1]);
+  assert.equal(b.find((ride) => ride.id === completed.id).share, 450);
+  assert(a.some((ride) => ride.status === "cancelled" && ride.share === null));
+  assert(!(await history(ids[3])).some((ride) => ride.id === completed.id));
+  await db.exec("set role authenticated");
+  assert((await history(ids[0])).some((ride) => ride.id === completed.id));
+  await db.query("select set_config('request.jwt.claim.sub','',false)");
+  await assert.rejects(db.exec("select public.campuspool_history()"), /UNAUTHENTICATED/);
+  await db.exec("reset role;set role anon");
+  await assert.rejects(db.exec("select public.campuspool_history()"), /permission denied/);
   await db.exec("reset role");
 });

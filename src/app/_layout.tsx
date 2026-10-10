@@ -53,6 +53,7 @@ export default function RootLayout(): JSX.Element {
                   <Stack screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="index" />
                     <Stack.Screen name="(tabs)" />
+                    <Stack.Screen name="history" options={{ presentation: "modal" }} />
                     <Stack.Screen name="chat" options={{ presentation: "modal" }} />
                     <Stack.Screen name="map" options={{ presentation: "modal" }} />
                     <Stack.Screen name="open-source" options={{ presentation: "modal" }} />

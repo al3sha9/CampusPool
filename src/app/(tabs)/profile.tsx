@@ -32,6 +32,9 @@ export default function Profile() {
           </Card.Body>
         </Card>
       )}
+      <Button variant="secondary" onPress={() => router.push("/history")}>
+        Ride history
+      </Button>
       <Card variant="secondary">
         <Card.Body className="flex-row items-center gap-4">
           <View style={{ flex: 1, gap: 4 }}>

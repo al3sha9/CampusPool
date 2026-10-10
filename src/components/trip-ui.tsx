@@ -168,14 +168,6 @@ export function Screen({
             </Button>
           )}
           {children}
-          <View style={{ marginTop: "auto", paddingTop: 12 }}>
-            <Disclosure title="About this demo">
-              <Text className="text-sm leading-6 text-muted">
-                Fictional students, illustrative pickup points and fares. Data resets on restart.
-                Booking and settlement happen outside CampusPool.
-              </Text>
-            </Disclosure>
-          </View>
         </ScrollView>
         {action && (
           <View

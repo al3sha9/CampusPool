@@ -447,7 +447,7 @@ export function TripFlow({
         {isOrganiser ? (
           <Card>
             <Card.Body style={{ gap: 20 }}>
-              <Card.Title>Finish the journey</Card.Title>
+              <Card.Title>End your journey</Card.Title>
               <TextField isInvalid={!!finalError}>
                 <Label>Final total (PKR) · optional</Label>
                 <Input
@@ -473,29 +473,15 @@ export function TripFlow({
                     setFinalError((e as Error).message);
                     return;
                   }
-                  Alert.alert(
-                    "Complete the journey?",
-                    `Record PKR ${total ?? group.total} as the final total. Settlement remains external.`,
-                    [
-                      { text: "Not yet", style: "cancel" },
-                      {
-                        text: "Complete",
-                        onPress: () =>
-                          onChange(
-                            () => trips.complete(group, viewerId, total),
-                            "Journey completed."
-                          ),
-                      },
-                    ]
-                  );
+                  void onChange(() => trips.complete(group, viewerId, total), "Ride complete.");
                 }}
               >
-                {pending ? "Updating…" : "Complete journey"}
+                {pending ? "Updating…" : "End journey"}
               </Button>
             </Card.Body>
           </Card>
         ) : (
-          <Notice>Your organiser will mark the journey complete.</Notice>
+          <Notice>Your organiser will end the journey.</Notice>
         )}
         {feedback}
         {viewer}
