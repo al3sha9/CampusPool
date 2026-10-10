@@ -13,6 +13,7 @@ import { metroDestination, type Destination } from "@/lib/destinations";
 import { pickupDemo } from "@/lib/pickup-runtime";
 import { useAuth } from "@/features/auth/auth-context";
 import { serverTrips, serverPickup } from "@/lib/trip-server";
+import { saveAccountProfile } from "@/lib/profile";
 type Stage = "signin" | "request" | "suggestions" | "lobby";
 function useTripState() {
   const router = useRouter();
@@ -25,6 +26,7 @@ function useTripState() {
         : "Student"
       : "Ayesha"
   );
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const [requestId, setRequestId] = useState("");
   const refreshBusy = useRef(false);
   const mutationRevision = useRef(0);
@@ -64,6 +66,7 @@ function useTripState() {
       const result = await serverTrips.bootstrap();
       if (revision !== mutationRevision.current) return;
       setAccountName(result.profile.name);
+      setAvatarPath(result.profile.avatarPath ?? null);
       setGroup((previous) =>
         JSON.stringify(previous) === JSON.stringify(result.group) ? previous : result.group
       );
@@ -91,6 +94,7 @@ function useTripState() {
         const result = await serverTrips.bootstrap();
         if (!active || revision !== mutationRevision.current) return;
         setAccountName(result.profile.name);
+        setAvatarPath(result.profile.avatarPath ?? null);
         setGroup((previous) =>
           JSON.stringify(previous) === JSON.stringify(result.group) ? previous : result.group
         );
@@ -133,6 +137,13 @@ function useTripState() {
       busy.current = false;
       setPending(false);
     }
+  }
+  async function saveProfile(fullName: string, photoUri: string | null, removePhoto: boolean) {
+    return run(async () => {
+      const profile = await saveAccountProfile(fullName, photoUri, avatarPath, removePhoto);
+      setAccountName(profile.name);
+      setAvatarPath(profile.avatarPath);
+    });
   }
   function resetTrip(navigateHome = true) {
     if (!preview && group) {
@@ -266,6 +277,8 @@ function useTripState() {
   return {
     preview,
     accountName,
+    avatarPath,
+    saveProfile,
     auth,
     refresh,
     clearTrip,

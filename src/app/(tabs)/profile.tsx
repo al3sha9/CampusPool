@@ -1,27 +1,37 @@
 import { Button, Card, Switch } from "heroui-native";
 import { useRouter } from "expo-router";
 import { Text, View } from "react-native";
-import { BrandMark } from "@/components/brand";
+import { ProfileAvatar } from "@/components/profile-avatar";
+import { ProfileEditor } from "@/features/profile/profile-editor";
+import { useState } from "react";
 import { Detail, Notice, Screen } from "@/components/trip-ui";
 import { useTrip } from "@/features/campus/trip-context";
 import { useThemePreference } from "@/features/theme/theme-preference";
 export default function Profile() {
   const { theme, setTheme } = useThemePreference();
   const router = useRouter();
-  const { signOut, pending, preview, accountName, auth, error } = useTrip();
+  const [editing, setEditing] = useState(false);
+  const { signOut, pending, preview, accountName, avatarPath, auth, error } = useTrip();
   return (
     <Screen
       title="Your profile"
       subtitle={preview ? "Local preview on this device." : "Your signed-in CampusPool account."}
     >
-      <Card>
-        <Card.Body style={{ gap: 20 }}>
-          <BrandMark size={64} />
-          <Card.Title>{accountName}</Card.Title>
-          {!preview && <Card.Description>{auth.session?.user.email}</Card.Description>}
-          <Detail icon="location" label="Campus" value="BIIT" />
-        </Card.Body>
-      </Card>
+      {editing ? (
+        <ProfileEditor onClose={() => setEditing(false)} />
+      ) : (
+        <Card>
+          <Card.Body style={{ gap: 20 }}>
+            <ProfileAvatar name={accountName} path={avatarPath} size={72} />
+            <Card.Title>{accountName}</Card.Title>
+            {!preview && <Card.Description>{auth.session?.user.email}</Card.Description>}
+            <Detail icon="location" label="Campus" value="BIIT" />
+            <Button variant="secondary" isDisabled={pending} onPress={() => setEditing(true)}>
+              Edit profile
+            </Button>
+          </Card.Body>
+        </Card>
+      )}
       <Card variant="secondary">
         <Card.Body className="flex-row items-center gap-4">
           <View style={{ flex: 1, gap: 4 }}>

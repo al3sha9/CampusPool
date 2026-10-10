@@ -64,6 +64,18 @@ async function prepare() {
       "utf8"
     )
   );
+  await db.exec(`create schema storage;
+    create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+    create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text,primary key(bucket_id,name));
+    alter table storage.objects enable row level security;
+    grant usage on schema storage to authenticated;
+    grant select,insert,delete on storage.objects to authenticated;`);
+  await db.exec(
+    readFileSync(
+      new URL("../supabase/migrations/20261010110000_edit_profile.sql", import.meta.url),
+      "utf8"
+    )
+  );
   for (let i = 0; i < ids.length; i++)
     await db.query("insert into auth.users values($1,now(),$2::jsonb)", [
       ids[i],
@@ -337,4 +349,43 @@ test("search and joining need no estimate; creating requires an explicit fare", 
   });
   assert.deepEqual(joined.shares, [501, 500]);
   assert.equal(joined.total, 1001);
+});
+
+test("profile names persist; avatar ownership and upload policies prevent cross-account changes", async () => {
+  const photo = `${ids[0]}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg`;
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)", [ids[0]]);
+  await db.exec("set role authenticated");
+  await db.query("insert into storage.objects(bucket_id,name) values('avatars',$1)", [photo]);
+  await assert.rejects(
+    db.query("insert into storage.objects(bucket_id,name) values('avatars',$1)", [
+      `${ids[1]}/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb.jpg`,
+    ]),
+    /row-level security/
+  );
+  const saved = await db.query("select public.campuspool_save_profile($1,$2) result", [
+    "Roshaan Ali",
+    photo,
+  ]);
+  assert.equal(saved.rows[0].result.name, "Roshaan Ali");
+  assert.equal((await rpc(ids[0], "bootstrap")).profile.avatarPath, photo);
+  await assert.rejects(
+    db.query("select public.campuspool_save_profile($1,$2)", ["", photo]),
+    /INVALID_NAME/
+  );
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)", [ids[1]]);
+  await assert.rejects(
+    db.query("select public.campuspool_save_profile($1,$2)", ["Sana", photo]),
+    /INVALID_PHOTO/
+  );
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)", [ids[0]]);
+  await db.query("select public.campuspool_save_profile($1,null)", ["Roshaan Updated"]);
+  const result = await rpc(ids[0], "bootstrap");
+  assert.equal(result.profile.name, "Roshaan Updated");
+  assert.equal(result.profile.avatarPath, null);
+  await db.exec("reset role;set role anon");
+  await assert.rejects(
+    db.query("select public.campuspool_save_profile($1,null)", ["Intruder"]),
+    /permission denied/
+  );
+  await db.exec("reset role");
 });

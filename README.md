@@ -17,11 +17,15 @@ The icon and native splash use the original supplied artwork. The splash canvas 
 
 ## Accounts and database
 
-Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_KEY` in `.env.local` using the publishable key. Run the complete `supabase/migrations/20261010084407_shared_trip_flow.sql` once in Supabase SQL Editor. Then run `supabase/migrations/20261010094653_searchable_destinations.sql` to enable destination search and per-request car estimates. Then run `supabase/migrations/20261010103000_optional_search_estimate.sql` so searching and joining do not require a car estimate. Existing installations need only migrations they have not already applied.
+Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_KEY` in `.env.local` using the publishable key. Run the complete `supabase/migrations/20261010084407_shared_trip_flow.sql` once in Supabase SQL Editor. Then run `supabase/migrations/20261010094653_searchable_destinations.sql` to enable destination search and per-request car estimates. Then run `supabase/migrations/20261010103000_optional_search_estimate.sql` so searching and joining do not require a car estimate. Run `supabase/migrations/20261010110000_edit_profile.sql` to enable profile editing and photo uploads. Existing installations need only migrations they have not already applied.
 
 For direct hackathon signup, turn **Confirm email** off in the Supabase Email provider settings. The local Supabase config already has confirmations disabled, but hosted settings must be changed in the dashboard. New accounts receive a session directly; no confirmation email is required. See [Supabase configuration](https://supabase.com/docs/guides/auth/general-configuration/).
 
 Sign up with your name, email and password. Home, Trips and Profile use your signed-in identity. The dummy preview entry has been removed; the local adapter remains as a test fixture. No peers or shared trips are seeded. Campus affiliation remains unverified.
+
+## Profile
+
+Profile → Edit profile saves the full name and a resized JPEG photo to Supabase. The header avatar opens Profile; Home greets the saved first name. Avatar uploads are limited to 2 MB and stored in each account’s own folder. Profile photos use a public image bucket; upload and deletion policies restrict changes to the owning account.
 
 ## Shared trip flow
 
@@ -58,4 +62,5 @@ pnpm exec expo export --platform ios --platform android --output-dir /tmp/campus
 SQL tests run the migration in PGlite with fixture Auth users and verify identity restrictions, fare consent, QR expiry/regeneration/consumption, rate limits and locked cancellation. Local adapter tests cover exact shares, version changes, role restrictions and terminal states.
 
 Physical verification is still required: allow and deny location on iPhone, check the blue marker and accuracy, background/resume and switch tabs, then complete the trip with two accounts and scan the passenger QR. Test session restoration after closing the app. Repeat location and camera checks on Android before claiming Android readiness. JavaScript bundle exports do not verify native permission prompts or GPS hardware.
+
 # CampusPool

@@ -1,3 +1,6 @@
+import { useRouter } from "expo-router";
+import { useTrip } from "@/features/campus/trip-context";
+import { ProfileAvatar } from "./profile-avatar";
 import { HugeiconsIcon } from "@hugeicons/react-native";
 import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
 import ArrowRight01Icon from "@hugeicons/core-free-icons/ArrowRight01Icon";
@@ -100,6 +103,8 @@ export function Screen({
   onBack?: () => void;
   action?: ReactNode;
 }) {
+  const router = useRouter();
+  const { accountName, avatarPath, auth } = useTrip();
   return (
     <StyledSafeAreaView className="flex-1 bg-background">
       <KeyboardAvoidingView
@@ -121,6 +126,16 @@ export function Screen({
             )}
             <Text className="text-lg font-semibold text-foreground">CampusPool</Text>
           </View>
+          {auth.session && (
+            <Button
+              isIconOnly
+              variant="ghost"
+              accessibilityLabel="Open profile"
+              onPress={() => router.navigate("/(tabs)/profile")}
+            >
+              <ProfileAvatar name={accountName} path={avatarPath} size={40} />
+            </Button>
+          )}
         </View>
         <ScrollView
           keyboardShouldPersistTaps="handled"

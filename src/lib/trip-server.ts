@@ -51,11 +51,10 @@ const change = (action: string, group: Group, extra: Record<string, unknown> = {
   tripRpc<Group>(action, { groupId: group.id, version: group.version, ...extra });
 export const serverTrips = {
   bootstrap: () =>
-    tripRpc<{ profile: { id: string; name: string; affiliation: string }; group: Group | null }>(
-      "bootstrap",
-      {},
-      false
-    ),
+    tripRpc<{
+      profile: { id: string; name: string; affiliation: string; avatarPath?: string | null };
+      group: Group | null;
+    }>("bootstrap", {}, false),
   search: (request: RideRequest) =>
     tripRpc<{ requestId: string; suggestions: Suggestion[] }>("search", { request }),
   join: (requestId: string, groupId?: string, carEstimate?: number) =>
