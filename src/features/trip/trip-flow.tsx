@@ -362,6 +362,7 @@ export function TripFlow({
     const shareDifference = index >= 0 ? shares[index] - estimateShare : 0;
     return (
       <Screen
+        showChat={!preview}
         key={group.status}
         title={completed ? "Journey complete" : "Trip cancelled"}
         subtitle={
@@ -432,7 +433,12 @@ export function TripFlow({
   }
   if (group.status === "in_progress")
     return (
-      <Screen key="journey" title="On your way" subtitle={destinationName(group.request)}>
+      <Screen
+        showChat={!preview}
+        key="journey"
+        title="On your way"
+        subtitle={destinationName(group.request)}
+      >
         <Chip className="self-start" variant="soft" color="success">
           Journey in progress
         </Chip>
@@ -500,6 +506,7 @@ export function TripFlow({
   if (page === "booking")
     return (
       <Screen
+        showChat={!preview}
         key="booking"
         title="Ready for booking"
         subtitle="One organiser. One external booking."
@@ -586,6 +593,7 @@ export function TripFlow({
   const remaining = qr ? Math.max(0, Math.ceil((qr.expiresAt - now) / 1000)) : 0;
   return (
     <Screen
+      showChat={!preview}
       key="pickup"
       title="Meet at the pickup"
       subtitle="BIIT campus · agree on the gate with your group"

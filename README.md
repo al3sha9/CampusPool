@@ -17,7 +17,7 @@ The icon and native splash use the original supplied artwork. The splash canvas 
 
 ## Accounts and database
 
-Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_KEY` in `.env.local` using the publishable key. Run the complete `supabase/migrations/20261010084407_shared_trip_flow.sql` once in Supabase SQL Editor. Then run `supabase/migrations/20261010094653_searchable_destinations.sql` to enable destination search and per-request car estimates. Then run `supabase/migrations/20261010103000_optional_search_estimate.sql` so searching and joining do not require a car estimate. Run `supabase/migrations/20261010110000_edit_profile.sql` to enable profile editing and photo uploads. Existing installations need only migrations they have not already applied.
+Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_KEY` in `.env.local` using the publishable key. Run the complete `supabase/migrations/20261010084407_shared_trip_flow.sql` once in Supabase SQL Editor. Then run `supabase/migrations/20261010094653_searchable_destinations.sql` to enable destination search and per-request car estimates. Then run `supabase/migrations/20261010103000_optional_search_estimate.sql` so searching and joining do not require a car estimate. Run `supabase/migrations/20261010110000_edit_profile.sql` to enable profile editing and photo uploads. Run `supabase/migrations/20261010120000_ride_chat.sql` for ride chat. Existing installations need only migrations they have not already applied.
 
 For direct hackathon signup, turn **Confirm email** off in the Supabase Email provider settings. The local Supabase config already has confirmations disabled, but hosted settings must be changed in the dashboard. New accounts receive a session directly; no confirmation email is required. See [Supabase configuration](https://supabase.com/docs/guides/auth/general-configuration/).
 
@@ -38,6 +38,10 @@ Profile → Edit profile saves the full name and a resized JPEG photo to Supabas
 Trips persist on Supabase. Sessions persist on the device. Active screens refresh every five seconds and on foregrounding. Signing out preserves the server trip. Finish dismisses the summary without deleting its record. Only the organiser can lock, quote, scan, start, complete or cancel; members may leave before departure. Locked groups cannot accept replacements.
 
 The authenticated RPC derives identity from `auth.uid()`, locks affected rows, validates versions and budgets, and stores only hashed, single-use QR tokens. App roles cannot directly read or write the private tables. The app reports missing SQL setup instead of substituting fake trips.
+
+## Ride chat
+
+Open **Ride chat** from the group or trip screen. Current members can exchange messages and share pickup descriptions, with a quick “I’m at the campus gate” message. Messages persist on Supabase and refresh every four seconds while chat is visible; background polling stops. Sending is limited to five messages per ten seconds and 500 characters. Retries reuse a message ID to prevent duplicates. Completed or cancelled rides retain read-only chat for current members. No phone coordinates are shared automatically.
 
 ## Map and location
 

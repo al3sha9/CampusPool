@@ -76,6 +76,12 @@ async function prepare() {
       "utf8"
     )
   );
+  await db.exec(
+    readFileSync(
+      new URL("../supabase/migrations/20261010120000_ride_chat.sql", import.meta.url),
+      "utf8"
+    )
+  );
   for (let i = 0; i < ids.length; i++)
     await db.query("insert into auth.users values($1,now(),$2::jsonb)", [
       ids[i],
@@ -387,5 +393,40 @@ test("profile names persist; avatar ownership and upload policies prevent cross-
     db.query("select public.campuspool_save_profile($1,null)", ["Intruder"]),
     /permission denied/
   );
+  await db.exec("reset role");
+});
+
+test("ride chat restricts membership, deduplicates retries, limits spam and closes after the ride", async () => {
+  const a = "55555555-5555-4555-8555-555555555555",
+    b = "66666666-6666-4666-8666-666666666666";
+  const g = (await rpc(a, "bootstrap")).group;
+  const chat = async (actor, body = null, nonce = null) => {
+    await db.query("select set_config('request.jwt.claim.sub',$1,false)", [actor]);
+    return (await db.query("select public.campuspool_chat($1,$2,$3) result", [g.id, body, nonce]))
+      .rows[0].result;
+  };
+  const nonce = operation();
+  let result = await chat(a, "At the library gate", nonce);
+  assert.equal(result[0].body, "At the library gate");
+  assert.equal(result[0].userId, a);
+  assert.equal((await chat(a, "At the library gate", nonce)).length, 1);
+  await assert.rejects(chat(a, "Different message", nonce), /NONCE_REUSED/);
+  assert.equal((await chat(b)).length, 1);
+  await assert.rejects(chat(ids[0]), /FORBIDDEN/);
+  await assert.rejects(chat(a, "   ", operation()), /INVALID_MESSAGE/);
+  for (let i = 0; i < 4; i++) await chat(a, `Message ${i}`, operation());
+  await assert.rejects(chat(a, "Too many", operation()), /RATE_LIMITED/);
+  await db.query("update campuspool_private.groups set status=$1 where id=$2", ["completed", g.id]);
+  await assert.rejects(chat(b, "Late message", operation()), /CHAT_CLOSED/);
+  assert.equal((await chat(b)).length, 5);
+  await db.query(
+    "update campuspool_private.members set active=false,current_trip=false where group_id=$1 and user_id=$2",
+    [g.id, b]
+  );
+  await assert.rejects(chat(b), /FORBIDDEN/);
+  await db.exec("set role authenticated");
+  await assert.rejects(db.exec("select * from campuspool_private.messages"), /permission denied/);
+  await db.exec("reset role; set role anon");
+  await assert.rejects(db.query("select public.campuspool_chat($1)", [g.id]), /permission denied/);
   await db.exec("reset role");
 });

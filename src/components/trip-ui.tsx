@@ -96,12 +96,14 @@ export function Screen({
   subtitle,
   onBack,
   action,
+  showChat = false,
 }: {
   children: ReactNode;
   title: string;
   subtitle: string;
   onBack?: () => void;
   action?: ReactNode;
+  showChat?: boolean;
 }) {
   const router = useRouter();
   const { accountName, avatarPath, auth } = useTrip();
@@ -160,6 +162,11 @@ export function Screen({
               {subtitle}
             </Text>
           </View>
+          {showChat && (
+            <Button variant="secondary" onPress={() => router.push("/chat")}>
+              Ride chat
+            </Button>
+          )}
           {children}
           <View style={{ marginTop: "auto", paddingTop: 12 }}>
             <Disclosure title="About this demo">

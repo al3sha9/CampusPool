@@ -413,6 +413,7 @@ export function CampusScreen({ tab = "signin" }: { tab?: "signin" | "home" | "tr
   return (
     <Screen
       key={stage}
+      showChat={!preview}
       title="Your group"
       subtitle="Same route. Clear split. Ready when everyone agrees."
     >
